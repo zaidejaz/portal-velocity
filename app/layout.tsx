@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import Header from "@/components/Header";
 
 const queryClient = new QueryClient()
 
@@ -31,10 +32,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <QueryClientProvider client={queryClient}>
+        <Header/>
           {children}
-          <Toaster />
-        </QueryClientProvider>
       </body>
     </html>
   );

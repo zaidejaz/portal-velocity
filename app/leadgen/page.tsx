@@ -1,309 +1,99 @@
 // app/leadgen/page.tsx
 
-'use client'
-
 import React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useToast } from "@/components/ui/use-toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-const formSchema = z.object({
-  customerFirstName: z.string().min(2, {
-    message: "First name must be at least 2 characters.",
-  }),
-  customerLastName: z.string().min(2, {
-    message: "Last name must be at least 2 characters.",
-  }),
-  phoneNumber: z.string().min(10, {
-    message: "Phone number must be at least 10 characters.",
-  }),
-  emailAddress: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  propertyAddress: z.string().min(5, {
-    message: "Property address must be at least 5 characters.",
-  }),
-  city: z.string().min(2, {
-    message: "City must be at least 2 characters.",
-  }),
-  state: z.string().min(2, {
-    message: "State must be at least 2 characters.",
-  }),
-  zipcode: z.string().min(5, {
-    message: "Zipcode must be at least 5 characters.",
-  }),
-  homeOwner: z.enum(["Yes", "No"]),
-  propertyValue: z.string().min(1, {
-    message: "Property value is required.",
-  }),
-  contractWithRealtor: z.enum(["Yes", "No"]),
-});
-
-type FormData = z.infer<typeof formSchema>;
-
-const fetchLeads = async () => {
-  const response = await axios.get('/api/leadgen');
-  return response.data;
-};
-
-const createLead = async (data: FormData) => {
-  const response = await axios.post('/api/leadgen', data);
-  return response.data;
-};
 
 export default function LeadGenPage() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  const { data: leads, isLoading, isError } = useQuery(['leads'], fetchLeads);
-
-  const createLeadMutation = useMutation(createLead, {
-    onSuccess: () => {
-      queryClient.invalidateQueries(['leads']);
-      toast({
-        title: "Success",
-        description: "Lead created successfully",
-      });
-      form.reset();
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to create lead",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      customerFirstName: "",
-      customerLastName: "",
-      phoneNumber: "",
-      emailAddress: "",
-      propertyAddress: "",
-      city: "",
-      state: "",
-      zipcode: "",
-      homeOwner: "No",
-      propertyValue: "",
-      contractWithRealtor: "No",
-    },
-  });
-
-  function onSubmit(values: FormData) {
-    createLeadMutation.mutate(values);
-  }
-
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Lead Generation Portal</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Submit New Lead</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="customerFirstName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>First Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="John" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="customerLastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Last Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Doe" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="phoneNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="1234567890" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="emailAddress"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Address</FormLabel>
-                      <FormControl>
-                        <Input placeholder="john@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="propertyAddress"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Property Address</FormLabel>
-                      <FormControl>
-                        <Input placeholder="123 Main St" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>City</FormLabel>
-                      <FormControl>
-                        <Input placeholder="New York" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="state"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>State</FormLabel>
-                      <FormControl>
-                        <Input placeholder="NY" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="zipcode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Zipcode</FormLabel>
-                      <FormControl>
-                        <Input placeholder="12345" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="homeOwner"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Home Owner</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Yes">Yes</SelectItem>
-                          <SelectItem value="No">No</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="propertyValue"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Property Value</FormLabel>
-                      <FormControl>
-                        <Input placeholder="500000" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="contractWithRealtor"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Contract with Any Realtor</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Yes">Yes</SelectItem>
-                          <SelectItem value="No">No</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full" disabled={createLeadMutation.isLoading}>
-                  {createLeadMutation.isLoading ? "Submitting..." : "Submit Lead"}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Submitted Leads</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <p>Loading leads...</p>
-            ) : isError ? (
-              <p>Error fetching leads</p>
-            ) : (
-              <ul className="space-y-2">
-                {leads.map((lead: any) => (
-                  <li key={lead.id} className="bg-gray-100 p-2 rounded">
-                    <p><strong>{lead.customerFirstName} {lead.customerLastName}</strong></p>
-                    <p>{lead.propertyAddress}, {lead.city}, {lead.state} {lead.zipcode}</p>
-                    <p>Property Value: ${lead.propertyValue}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200 p-8">
+      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-xl overflow-hidden">
+        <div className="p-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-6">Lead Generation Portal</h1>
+          <form className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">First Name</label>
+                <input type="text" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                <input type="text" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                <input type="tel" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                <input type="email" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700">Property Address</label>
+                <input type="text" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">City</label>
+                <input type="text" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">State</label>
+                <input type="text" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Zipcode</label>
+                <input type="text" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Property Value</label>
+                <input type="number" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Home Owner</label>
+                <select className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                  <option>Yes</option>
+                  <option>No</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Contract with Any Realtor</label>
+                <select className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                  <option>Yes</option>
+                  <option>No</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <button type="submit" className="w-full bg-blue-600 text-white rounded-md p-3 hover:bg-blue-700 transition duration-300">
+                Submit Lead
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div className="mt-12 bg-white rounded-lg shadow-xl overflow-hidden">
+        <div className="p-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Submitted Leads</h2>
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              <tr>
+                <td className="px-6 py-4 whitespace-nowrap">John Doe</td>
+                <td className="px-6 py-4 whitespace-nowrap">123 Main St, Anytown, USA</td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    Submitted
+                  </span>
+                </td>
+              </tr>
+              {/* Add more rows as needed */}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
