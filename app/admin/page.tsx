@@ -1,7 +1,6 @@
 // app/admin/page.tsx
 
 import React from 'react';
-import Header from '../../components/Header';
 
 export default function AdminPage() {
   return (
