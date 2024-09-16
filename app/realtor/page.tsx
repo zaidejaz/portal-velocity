@@ -1,7 +1,6 @@
 // app/realtor/page.tsx
 
 import React from 'react';
-import Header from '../../components/Header';
 
 export default function RealtorPage() {
   return (
