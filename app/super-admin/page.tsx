@@ -1,85 +1,192 @@
-// app/super-admin/page.tsx
+// app/admin/page.tsx
 
-import React from 'react';
+'use client'
 
-export default function SuperAdminPage() {
+import React, { useState, useEffect } from 'react';
+import Header from '../../components/Header';
+
+interface User {
+  id: string;
+  email: string;
+  role: string;
+}
+
+interface Lead {
+  id: string;
+  customerFirstName: string;
+  customerLastName: string;
+  status: string;
+}
+
+interface Realtor {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
+export default function AdminPage() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [realtors, setRealtors] = useState<Realtor[]>([]);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  useEffect(() => {
+    fetchData('users');
+    fetchData('leads');
+    fetchData('realtors');
+    // In a real application, you would determine the user's role here
+    setIsSuperAdmin(true);
+  }, []);
+
+  const fetchData = async (model: string) => {
+    try {
+      const response = await fetch(`/api/admin?model=${model}`);
+      if (response.ok) {
+        const data = await response.json();
+        switch (model) {
+          case 'users':
+            setUsers(data);
+            break;
+          case 'leads':
+            setLeads(data);
+            break;
+          case 'realtors':
+            setRealtors(data);
+            break;
+        }
+      } else {
+        throw new Error(`Failed to fetch ${model}`);
+      }
+    } catch (error) {
+      console.error(`Error fetching ${model}:`, error);
+      alert(`Failed to fetch ${model}`);
+    }
+  };
+
+  const handleDelete = async (model: string, id: string) => {
+    if (!isSuperAdmin) {
+      alert('Only Super Admin can delete records');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin?model=${model}&id=${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        alert(`${model.slice(0, -1)} deleted successfully`);
+        fetchData(model);
+      } else {
+        throw new Error(`Failed to delete ${model.slice(0, -1)}`);
+      }
+    } catch (error) {
+      console.error(`Error deleting ${model.slice(0, -1)}:`, error);
+      alert(`Failed to delete ${model.slice(0, -1)}`);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 to-pink-200">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200">
+      <Header />
       <div className="container mx-auto p-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">Super Admin Portal</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">{isSuperAdmin ? 'Super Admin' : 'Admin'} Portal</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white rounded-lg shadow-xl overflow-hidden">
             <div className="p-8">
-              <h2 className="text-2xl font-semibold mb-4">System Management</h2>
-              <ul className="space-y-4">
-                <li>
-                  <button className="w-full bg-blue-600 text-white rounded-md p-3 hover:bg-blue-700 transition duration-300">
-                    User Management
-                  </button>
-                </li>
-                <li>
-                  <button className="w-full bg-green-600 text-white rounded-md p-3 hover:bg-green-700 transition duration-300">
-                    Lead Management
-                  </button>
-                </li>
-                <li>
-                  <button className="w-full bg-yellow-600 text-white rounded-md p-3 hover:bg-yellow-700 transition duration-300">
-                    Realtor Management
-                  </button>
-                </li>
-                <li>
-                  <button className="w-full bg-red-600 text-white rounded-md p-3 hover:bg-red-700 transition duration-300">
-                    System Configuration
-                  </button>
-                </li>
-              </ul>
+              <h2 className="text-2xl font-semibold mb-4">User Management</h2>
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {users.map((user) => (
+                    <tr key={user.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{user.role}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button className="text-indigo-600 hover:text-indigo-900 mr-2">Edit</button>
+                        {isSuperAdmin && (
+                          <button 
+                            className="text-red-600 hover:text-red-900"
+                            onClick={() => handleDelete('users', user.id)}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
           <div className="bg-white rounded-lg shadow-xl overflow-hidden">
             <div className="p-8">
-              <h2 className="text-2xl font-semibold mb-4">Analytics Dashboard</h2>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-medium text-gray-700 mb-2">Total Users</h3>
-                  <p className="text-4xl font-bold text-blue-600">1,234</p>
-                </div>
-                <div>
-                  <h3 className="text-lg font-medium text-gray-700 mb-2">Active Leads</h3>
-                  <p className="text-4xl font-bold text-green-600">567</p>
-                </div>
-                <div>
-                  <h3 className="text-lg font-medium text-gray-700 mb-2">Conversion Rate</h3>
-                  <p className="text-4xl font-bold text-yellow-600">12.5%</p>
-                </div>
-                <div>
-                  <h3 className="text-lg font-medium text-gray-700 mb-2">Revenue This Month</h3>
-                  <p className="text-4xl font-bold text-red-600">$98,765</p>
-                </div>
-              </div>
+              <h2 className="text-2xl font-semibold mb-4">Lead Management</h2>
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {leads.map((lead) => (
+                    <tr key={lead.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">{lead.customerFirstName} {lead.customerLastName}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{lead.status}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button className="text-indigo-600 hover:text-indigo-900 mr-2">Edit</button>
+                        {isSuperAdmin && (
+                          <button 
+                            className="text-red-600 hover:text-red-900"
+                            onClick={() => handleDelete('leads', lead.id)}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
         <div className="mt-8 bg-white rounded-lg shadow-xl overflow-hidden">
           <div className="p-8">
-            <h2 className="text-2xl font-semibold mb-4">Recent Activity</h2>
+            <h2 className="text-2xl font-semibold mb-4">Realtor Management</h2>
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {[
-                  { user: 'John Doe', action: 'Created new lead', date: '2024-09-15' },
-                  { user: 'Jane Smith', action: 'Updated user profile', date: '2024-09-14' },
-                  { user: 'Mike Johnson', action: 'Assigned lead to realtor', date: '2024-09-13' },
-                ].map((activity, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap">{activity.user}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{activity.action}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{activity.date}</td>
+                {realtors.map((realtor) => (
+                  <tr key={realtor.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">{realtor.firstName} {realtor.lastName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{realtor.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <button className="text-indigo-600 hover:text-indigo-900 mr-2">Edit</button>
+                      {isSuperAdmin && (
+                        <button 
+                          className="text-red-600 hover:text-red-900"
+                          onClick={() => handleDelete('realtors', realtor.id)}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

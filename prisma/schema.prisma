@@ -23,7 +23,7 @@ model User {
 }
 
 model Lead {
-  id                String   @id @default(cuid())
+  id                String   @id
   submissionDate    DateTime @default(now())
   customerFirstName String
   customerLastName  String
